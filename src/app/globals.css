@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens — warm café palette ---------- */
+@theme {
+  --color-cream: #f7f1e8;
+  --color-cream-2: #efe5d6;
+  --color-surface: #fffbf5;
+  --color-porcelain: #fffdf9;
+  --color-saucer: #e6d6bf;
+  --color-milk: #f7ead6;
+  --color-ink: #2a1d14;
+  --color-ink-2: #5e4b3c;
+  --color-muted: #8f7d6d;
+  --color-line: #e6d9c6;
+  --color-accent: #b9532a;
+  --color-accent-2: #dd8a52;
+  --color-on-accent: #ffffff;
+  --color-crema: #d8a46a;
+  --color-roast: #a8642f;
+  --color-espresso: #3a2416;
+  --color-espresso-2: #22150c;
+  --color-sage: #8b9a76;
+
+  /* page-load entry animations — apply with `motion-safe:` */
+  --animate-header-in: header-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-enter-focus: enter-focus 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-cup-enter: cup-enter 1.5s cubic-bezier(0.16, 0.84, 0.3, 1) both;
+  --animate-pour: pour 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  --animate-stem: stem 0.6s ease-out both;
+  --animate-bean-drop: bean-drop 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-card-flip: card-flip 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 2.8s ease-in-out infinite;
+}
+
+/* next/font variables, mapped to Tailwind's font-sans / font-display */
+@theme inline {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+/* Street-grid pattern for the "Visit us" map card — two road layers plus
+   a finer diagonal lane layer. Too many stops to read as arbitrary values. */
+@utility bg-map {
+  background-color: var(--color-cream-2);
+  background-image:
+    linear-gradient(90deg, transparent 46%, var(--color-porcelain) 46%, var(--color-porcelain) 54%, transparent 54%),
+    linear-gradient(0deg, transparent 46%, var(--color-porcelain) 46%, var(--color-porcelain) 54%, transparent 54%),
+    linear-gradient(35deg, transparent 49%, var(--color-saucer) 49%, var(--color-saucer) 51%, transparent 51%);
+  background-size:
+    140px 140px,
+    140px 140px,
+    70px 70px;
+}
+
+/* ---------- Page-load motion ---------- */
+@keyframes header-in {
+  from { opacity: 0; transform: translateY(-100%); }
+}
+/* soft "focus pull": blurred and slightly large, then sharp */
+@keyframes enter-focus {
+  from { opacity: 0; filter: blur(12px); transform: translateY(18px) scale(1.04); }
+}
+/* the cup lands tilted and spun, then settles flat */
+@keyframes cup-enter {
+  from { opacity: 0; transform: perspective(1200px) translateY(80px) rotateX(70deg) rotateZ(-60deg) scale(0.65); }
+  60% { opacity: 1; }
+}
+@keyframes pour {
+  from { opacity: 0; transform: scale(0.2); }
+}
+@keyframes stem {
+  from { transform: scaleY(0); }
+}
+@keyframes bean-drop {
+  from { opacity: 0; transform: translateY(-120px) rotate(-200deg) scale(0.5); }
+}
+@keyframes card-flip {
+  from { opacity: 0; transform: perspective(900px) translateX(-40px) rotateY(-75deg); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+/* ---------- Scroll-driven motion ----------
+ * Native CSS scroll-driven animations: effects play forward as you scroll
+ * down and rewind as you scroll back up. No JS, off the main thread.
+ * The vocabulary is café-themed — focus pulls, steam, a menu that opens like
+ * a booklet, a paper map unfolding, notes dropped on a table, a ripple.
+ *
+ * - Always apply through the `scroll-fx:` variant (`scroll-fx:fx-steam`). It
+ *   only switches effects on where `animation-timeline` is supported and the
+ *   visitor hasn't asked for reduced motion; everywhere else content renders
+ *   in place.
+ * - An ancestor with `overflow-hidden` freezes the `view()` timeline. Clip
+ *   with `overflow-clip` instead.
+ * - Stagger siblings with `[--fx-stagger:N%]` (see FX_STAGGER in constants.ts).
+ * - An animated `transform` beats a hover `transform` on the same element, so
+ *   put scroll effects on a wrapper when the element itself tilts on hover.
+ *   (`rotate`/`translate`/`scale` utilities are separate properties and still
+ *   work alongside.)
+ */
+@custom-variant scroll-fx {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      @slot;
+    }
+  }
+}
+
+/* headings: out-of-focus to sharp */
+@keyframes fx-focus {
+  from { opacity: 0; filter: blur(14px); transform: scale(1.08); }
+}
+/* body text and small cards: drift up like steam */
+@keyframes fx-steam {
+  from { opacity: 0; filter: blur(6px); transform: translateY(36px); }
+}
+/* menu cards open like a booklet, hinged on their left edge */
+@keyframes fx-turn {
+  from { opacity: 0; transform: perspective(1400px) rotateY(-100deg); }
+  40% { opacity: 1; }
+}
+/* the map unfolds downward from its top edge, like paper */
+@keyframes fx-unfold {
+  from { opacity: 0; transform: perspective(1200px) rotateX(-85deg); }
+  35% { opacity: 1; }
+}
+/* drops in from above and bounces once */
+@keyframes fx-drop {
+  0% { opacity: 0; transform: translateY(-140px); }
+  60% { opacity: 1; transform: translateY(10px); }
+  80% { transform: translateY(-6px); }
+  100% { transform: none; }
+}
+/* review notes dropped onto the table; their resting tilt is a separate
+   `rotate` utility, so it survives the animation */
+@keyframes fx-note {
+  from { opacity: 0; transform: translateY(-70px) rotate(-14deg) scale(1.12); }
+}
+/* circular reveal spreading from the corner, like a ripple in a cup */
+@keyframes fx-ripple {
+  from { clip-path: circle(0% at 0% 100%); }
+  to { clip-path: circle(150% at 0% 100%); }
+}
+/* hero exit — driven by page scroll over the first screen */
+@keyframes fx-hero-drift {
+  to { opacity: 0; filter: blur(10px); transform: translate(-40px, -50px); }
+}
+@keyframes fx-hero-cup {
+  to { opacity: 0.35; transform: perspective(1200px) translateY(-60px) rotateX(40deg) rotateZ(140deg) scale(0.85); }
+}
+
+@utility fx-focus {
+  animation: fx-focus linear both;
+  animation-timeline: view();
+  animation-range: entry 15% cover 30%;
+}
+@utility fx-steam {
+  animation: fx-steam linear both;
+  animation-timeline: view();
+  animation-range: entry var(--fx-stagger, 0%) cover calc(22% + var(--fx-stagger, 0%));
+}
+@utility fx-turn {
+  transform-origin: left center;
+  animation: fx-turn linear both;
+  animation-timeline: view();
+  animation-range: entry var(--fx-stagger, 0%) cover calc(32% + var(--fx-stagger, 0%));
+}
+@utility fx-unfold {
+  transform-origin: top center;
+  animation: fx-unfold linear both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 35%;
+}
+@utility fx-drop {
+  animation: fx-drop linear both;
+  animation-timeline: view();
+  animation-range: entry var(--fx-stagger, 0%) cover calc(30% + var(--fx-stagger, 0%));
+}
+@utility fx-note {
+  animation: fx-note linear both;
+  animation-timeline: view();
+  animation-range: entry var(--fx-stagger, 0%) cover calc(25% + var(--fx-stagger, 0%));
+}
+@utility fx-ripple {
+  animation: fx-ripple linear both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+}
+@utility fx-hero-drift {
+  animation: fx-hero-drift linear both;
+  animation-timeline: scroll(root);
+  animation-range: 0 80vh;
+}
+@utility fx-hero-cup {
+  animation: fx-hero-cup linear both;
+  animation-timeline: scroll(root);
+  animation-range: 0 100vh;
+}
